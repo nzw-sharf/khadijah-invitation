@@ -1,3 +1,25 @@
+/* ─── NAME FIELD ─── */
+.nameField {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.input {
+  width: 80%;
+  padding: 10px 14px;
+  border: 1px solid #b8c9a0;
+  border-radius: 8px;
+  font-size: 1.08rem;
+  outline: none;
+  background: #f7f9f4;
+  color: #3a5230;
+  margin-bottom: 0;
+  transition: border 0.2s;
+}
+.input:focus {
+  border: 1.5px solid #a8975a;
+}
 /* ─── WRAP ─── */
 .wrap {
   position: relative;

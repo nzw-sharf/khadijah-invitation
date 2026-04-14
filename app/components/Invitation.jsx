@@ -7,6 +7,7 @@ const SCREENS = ['intro', 'details', 'rsvp', 'guests', 'decline', 'location']
 export default function Invitation() {
   const [screen, setScreen] = useState('intro')
   const [guestCount, setGuestCount] = useState(1)
+  const [guestName, setGuestName] = useState('')
   const [locMsg, setLocMsg] = useState("We can't wait to celebrate with you!")
   const wrapRef = useRef(null)
 
@@ -19,7 +20,27 @@ export default function Invitation() {
     setGuestCount(n => Math.max(1, Math.min(20, n + d)))
   }
 
-  function confirm() {
+  async function confirm() {
+    // Send RSVP to Google Sheets via NoCodeAPI
+    try {
+      // NoCodeAPI expects a 2D array: [[Name, Guests]]
+      const data = [
+        [guestName, guestCount]
+      ];
+      const response = await fetch("https://v1.nocodeapi.com/nazwasharaf/google_sheets/epeABttzLksXqcCD?tabId=data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data),
+        redirect: "follow"
+      });
+      const result = await response.json();
+      console.log('RSVP response:', result);
+    } catch (error) {
+      // Optionally handle error (e.g., show a message)
+      console.log('RSVP error:', error);
+    }
     setLocMsg(guestCount === 1 ? 'See you there!' : `See all ${guestCount} of you there!`)
     go('location')
   }
@@ -53,7 +74,17 @@ export default function Invitation() {
       {screen === 'intro'    && <IntroScreen    go={go} />}
       {screen === 'details'  && <DetailsScreen  go={go} />}
       {screen === 'rsvp'     && <RsvpScreen     go={go} />}
-      {screen === 'guests'   && <GuestsScreen   go={go} guestCount={guestCount} adj={adj} confirm={confirm} guestHint={guestHint} />}
+      {screen === 'guests'   && (
+        <GuestsScreen
+          go={go}
+          guestCount={guestCount}
+          adj={adj}
+          confirm={confirm}
+          guestHint={guestHint}
+          guestName={guestName}
+          setGuestName={setGuestName}
+        />
+      )}
       {screen === 'decline'  && <DeclineScreen  go={go} />}
       {screen === 'location' && <LocationScreen locMsg={locMsg} />}
     </div>
@@ -209,7 +240,7 @@ function RsvpScreen({ go }) {
 }
 
 /* ─── GUESTS ─── */
-function GuestsScreen({ go, guestCount, adj, confirm, guestHint }) {
+function GuestsScreen({ go, guestCount, adj, confirm, guestHint, guestName, setGuestName }) {
   return (
     <div className={`${styles.screen} ${styles.screenGuests}`}>
       <div className={styles.bigEmoji}>🎊</div>
@@ -217,6 +248,16 @@ function GuestsScreen({ go, guestCount, adj, confirm, guestHint }) {
       <p className={`${styles.gP} ${styles.animFadeDown2}`}>
         Let us know how many people will be joining so we can prepare the warmest welcome!
       </p>
+      <div className={styles.nameField} style={{ marginBottom: 18 }}>
+        <input
+          className={styles.input}
+          type="text"
+          placeholder="Your name"
+          value={guestName}
+          onChange={e => setGuestName(e.target.value)}
+          autoComplete="off"
+        />
+      </div>
       <div className={`${styles.cntWrap} ${styles.animPopIn}`}>
         <button className={styles.cbtn} onClick={() => adj(-1)}>−</button>
         <div className={styles.cval}>{guestCount}</div>
